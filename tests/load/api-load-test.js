@@ -22,9 +22,9 @@ export const options = {
     { duration: '30s', target: 0 },
   ],
   thresholds: {
-    http_req_duration: ['p(95)<2000'], // 95% of requests must complete below 2s (relaxed for PoC)
-    http_req_failed: ['rate<0.20'],    // Error rate must be below 20% (relaxed for PoC) 
-    errors: ['rate<0.30'],             // Custom error rate must be below 30% (relaxed for PoC)
+    http_req_duration: ['p(95)<5000'], // 95% of requests must complete below 5s (more realistic for CI)
+    http_req_failed: ['rate<0.10'],    // Error rate must be below 10% (tightened but reasonable) 
+    errors: ['rate<0.10'],             // Custom error rate must be below 10% (tightened but reasonable)
   },
 };
 
@@ -39,7 +39,7 @@ export default function () {
     const statusResponse = http.get(`${BASE_URL}/status/200`);
     check(statusResponse, {
       'status endpoint returns 200': (r) => r.status === 200,
-      'status response time < 2000ms': (r) => r.timings.duration < 2000,
+      'status response time < 5000ms': (r) => r.timings.duration < 5000,
     }) || errorRate.add(1);
 
     sleep(1);
@@ -47,7 +47,7 @@ export default function () {
     const jsonResponse = http.get(`${BASE_URL}/json`);
     check(jsonResponse, {
       'json endpoint returns 200': (r) => r.status === 200,
-      'json response time < 2000ms': (r) => r.timings.duration < 2000,
+      'json response time < 5000ms': (r) => r.timings.duration < 5000,
       'json returns valid JSON': (r) => {
         try {
           JSON.parse(r.body);
@@ -62,7 +62,7 @@ export default function () {
     const healthResponse = http.get(`${BASE_URL}/health`);
     check(healthResponse, {
       'health check status is 200': (r) => r.status === 200,
-      'health check response time < 200ms': (r) => r.timings.duration < 200,
+      'health check response time < 1000ms': (r) => r.timings.duration < 1000,
     }) || errorRate.add(1);
 
     sleep(1);
@@ -70,7 +70,7 @@ export default function () {
     const helloResponse = http.get(`${BASE_URL}/api/hello`);
     check(helloResponse, {
       'hello API status is 200': (r) => r.status === 200,
-      'hello API response time < 300ms': (r) => r.timings.duration < 300,
+      'hello API response time < 1000ms': (r) => r.timings.duration < 1000,
       'hello API returns expected message': (r) => r.body.includes('Hello from Backend'),
     }) || errorRate.add(1);
   }

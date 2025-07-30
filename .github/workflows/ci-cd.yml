@@ -1,4 +1,4 @@
-name: CI/CD Pipeline (Minimal PoC)
+name: CI/CD Pipeline (Minimal PoC v2)
 
 on:
   push:
